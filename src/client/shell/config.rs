@@ -121,6 +121,7 @@ impl ClientShellConfig {
             mobile_width_threshold: config.ui.mobile_width_threshold,
             tab_bar_position: config.ui.tab_bar_position,
             hide_tab_bar_when_single_tab: config.ui.hide_tab_bar_when_single_tab,
+            show_agent_status_on_tabs: config.ui.show_agent_status_on_tabs,
             spaces: config.ui.sidebar.spaces.clone(),
             agents: config.ui.sidebar.agents.clone(),
             agent_panel_sort: config.ui.agent_panel_sort,
@@ -323,6 +324,7 @@ impl ClientShellConfig {
                 self.mobile_width_threshold = ui.mobile_width_threshold;
                 self.tab_bar_position = ui.tab_bar_position;
                 self.hide_tab_bar_when_single_tab = ui.hide_tab_bar_when_single_tab;
+                self.show_agent_status_on_tabs = ui.show_agent_status_on_tabs;
                 self.spaces = ui.sidebar.spaces.clone();
                 self.agents = ui.sidebar.agents.clone();
                 self.agent_panel_sort = ui.agent_panel_sort;
@@ -456,6 +458,7 @@ mod tests {
         let mut next = Config::default();
         next.ui.sidebar_width = 31;
         next.ui.tab_bar_position = TabBarPositionConfig::Bottom;
+        next.ui.show_agent_status_on_tabs = true;
         next.ui.agent_panel_sort = crate::config::AgentPanelSortConfig::Priority;
         next.ui.status_indicators = crate::config::StatusIndicatorStyle::Symbols;
         next.ui.sidebar.agents = toml::from_str("rows = [[{ token = 'machine', rules = [{ equals = 'Local', bold = true }] }]]\nrow_gap = 2").unwrap();
@@ -466,6 +469,7 @@ mod tests {
         assert!(diagnostics.is_empty());
         assert_eq!(shell.sidebar_width, 31);
         assert_eq!(shell.tab_bar_position, TabBarPositionConfig::Bottom);
+        assert!(shell.show_agent_status_on_tabs);
         assert_eq!(
             shell.agent_panel_sort,
             crate::config::AgentPanelSortConfig::Priority
@@ -489,10 +493,13 @@ mod tests {
             &["ui".to_owned(), "keys".to_owned()],
         );
         assert_eq!(shell.agents, previous);
+        assert!(shell.show_agent_status_on_tabs);
         assert_eq!(
             shell.keybinds.prefix,
             vec![(KeyCode::Char('a'), KeyModifiers::CONTROL)]
         );
+        shell.apply_live_config(&Config::default(), &[], &[]);
+        assert!(!shell.show_agent_status_on_tabs);
     }
 
     #[test]

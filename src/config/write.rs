@@ -2,6 +2,7 @@
 pub(crate) enum ConfigEdit<'a> {
     Theme(&'a str),
     StatusIndicators(super::StatusIndicatorStyle),
+    ShowAgentStatusOnTabs(bool),
     Sound(bool),
     ToastDelivery(super::ToastDelivery),
 }
@@ -11,6 +12,7 @@ impl ConfigEdit<'_> {
         match self {
             Self::Theme(_) => "theme",
             Self::StatusIndicators(_) => "status indicators",
+            Self::ShowAgentStatusOnTabs(_) => "show agent status on tabs",
             Self::Sound(_) => "sound setting",
             Self::ToastDelivery(_) => "toast setting",
         }
@@ -29,6 +31,9 @@ impl ConfigEdit<'_> {
                 "status_indicators",
                 &format!("\"{}\"", style.as_str()),
             ),
+            Self::ShowAgentStatusOnTabs(enabled) => {
+                super::upsert_section_bool(content, "ui", "show_agent_status_on_tabs", enabled)
+            }
             Self::Sound(enabled) => {
                 super::upsert_section_bool(content, "ui.sound", "enabled", enabled)
             }
@@ -77,6 +82,25 @@ pub(crate) fn write_edit(edit: ConfigEdit<'_>) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tab_status_edit_preserves_other_settings_and_replaces_existing_value() {
+        let original =
+            "# user config\n[ui]\nstatus_indicators = \"symbols\"\n\n[theme]\nname = \"nord\"\n";
+        let enabled = ConfigEdit::ShowAgentStatusOnTabs(true).apply(original);
+        let disabled = ConfigEdit::ShowAgentStatusOnTabs(false).apply(&enabled);
+        for (content, expected) in [(&enabled, true), (&disabled, false)] {
+            let config: super::super::Config = toml::from_str(content).unwrap();
+            assert_eq!(config.ui.show_agent_status_on_tabs, expected);
+            assert_eq!(
+                config.ui.status_indicators,
+                super::super::StatusIndicatorStyle::Symbols
+            );
+            assert_eq!(config.theme.name.as_deref(), Some("nord"));
+            assert!(content.starts_with("# user config\n"));
+            assert_eq!(content.matches("show_agent_status_on_tabs").count(), 1);
+        }
+    }
 
     #[test]
     fn update_file_at_does_not_move_a_leading_bom_into_the_file() {

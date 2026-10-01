@@ -315,6 +315,15 @@ The sidebar is the main Herdr dashboard. Search `ui.` in the [Config reference](
 
 Set `tab_bar_position = "bottom"` under `[ui]` to place the desktop tab row below the terminal panes. Prefix, Navigate, Copy, and Resize mode bars temporarily replace the bottom tab row while active. The default is `"top"`.
 
+To show agent status beside each desktop tab name, open Settings, select the tabs section, and turn on "show agent status on tabs". You can also configure it directly:
+
+```toml
+[ui]
+show_agent_status_on_tabs = true
+```
+
+The option defaults to `false` and supports config hot reload. It works with the sidebar open or collapsed and with either tab-bar position. Each marker uses the sidebar's colors and `status_indicators` style. For tabs with multiple agents, the marker follows the existing attention priority, blocked, done and unseen, working, idle, then unknown. Tabs without agents show the unknown marker. Tab names stay unchanged. `hide_tab_bar_when_single_tab` still hides the row when enabled.
+
 Configure an ordered tmux-style status area at the right edge of the tab row:
 
 ```toml

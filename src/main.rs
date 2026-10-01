@@ -310,6 +310,9 @@ const DEFAULT_CONFIG: &str = r##"# herdr configuration
 # New tabs can still be created with the configured keybinding.
 # hide_tab_bar_when_single_tab = false
 
+# Show aggregate agent status beside each desktop tab name, using sidebar colors and icons.
+# show_agent_status_on_tabs = false
+
 # Desktop tab row placement: "top" or "bottom".
 # tab_bar_position = "top"
 

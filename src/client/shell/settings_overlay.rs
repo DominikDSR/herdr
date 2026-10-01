@@ -170,6 +170,18 @@ pub(super) fn render_settings_overlay(
                 &mut choice_hits,
             );
         }
+        ClientSettingsSection::Tabs => {
+            render_choice_section(
+                buffer,
+                content,
+                "show agent status on tabs",
+                "use sidebar status colors and icons beside each tab name",
+                &["on", "off"],
+                settings.selected,
+                palette,
+                &mut choice_hits,
+            );
+        }
         ClientSettingsSection::Sound => {
             render_choice_section(
                 buffer,

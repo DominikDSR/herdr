@@ -24,7 +24,7 @@ pub(crate) fn render_tab_bar(
     let desired_widths = tabs
         .iter()
         .map(|tab| {
-            let label = tab_label(tab);
+            let label = tab_label(tab, config);
             display_width(&label).saturating_add(4).max(MIN_TAB_WIDTH)
         })
         .collect::<Vec<_>>();
@@ -92,7 +92,7 @@ pub(crate) fn render_tab_bar(
     let mut first_visible = None;
     let mut last_visible = None;
     for (index, tab) in tabs.iter().enumerate().skip(*tab_scroll) {
-        let name = tab_label(tab);
+        let name = tab_label(tab, config);
         let desired = desired_widths[index];
         let remaining = tab_right.saturating_sub(x);
         let width = desired.min(remaining);
@@ -123,6 +123,20 @@ pub(crate) fn render_tab_bar(
             right_padding = padding.saturating_sub(left) as usize,
         );
         put_text(buffer, rect.x, rect.y, rect.width, &text, style);
+        if config.show_agent_status_on_tabs {
+            // Use a neutral background so the state color remains legible on
+            // the focused tab's accent background, including light themes.
+            put_text(
+                buffer,
+                rect.x.saturating_add(left),
+                rect.y,
+                rect.width.saturating_sub(left).min(1),
+                status_icon(tab.agent_status, config.status_indicators),
+                Style::default()
+                    .fg(status_color(tab.agent_status, palette))
+                    .bg(palette.surface0),
+            );
+        }
         hits.tabs.push((rect, tab.tab_id.clone()));
         first_visible.get_or_insert(index);
         last_visible = Some(index);
@@ -371,9 +385,16 @@ fn max_tab_scroll(widths: &[u16], available: u16) -> usize {
     start
 }
 
-fn tab_label(tab: &ClientShellTab) -> String {
-    if tab.zoomed {
-        format!("{} Z", tab.label)
+fn tab_label(tab: &ClientShellTab, config: &ClientShellConfig) -> String {
+    let zoom = if tab.zoomed { " Z" } else { "" };
+    if config.show_agent_status_on_tabs {
+        format!(
+            "{} {}{zoom}",
+            status_icon(tab.agent_status, config.status_indicators),
+            tab.label,
+        )
+    } else if tab.zoomed {
+        format!("{}{zoom}", tab.label)
     } else {
         tab.label.clone()
     }

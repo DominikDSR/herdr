@@ -1000,6 +1000,12 @@
           "description": "Hide the tab row when the workspace has one tab."
         },
         {
+          "key": "ui.show_agent_status_on_tabs",
+          "type": "boolean",
+          "default": "false",
+          "description": "Show aggregate agent status beside each desktop tab name using the sidebar colors and status_indicators style. Applies with the sidebar open or collapsed and supports config hot reload."
+        },
+        {
           "key": "ui.tab_bar_position",
           "type": "enum",
           "default": "\"top\"",
